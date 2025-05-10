@@ -49,3 +49,8 @@ def upload_file(request):
 def success(request):
     return render(request, 'success.html')
 
+def receipt_list(request):
+    # Fetch all receipts from the database
+    receipts = ExtractedReceipt.objects.all()
+    return render(request, 'receipt_list.html', {'receipts': receipts})
+
