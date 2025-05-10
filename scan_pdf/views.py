@@ -14,13 +14,33 @@ def upload_file(request):
             extracted_text = extract_text_from_pdf(file_path)
             # Parse the extracted text
             parsed_data = parse_receipt_data(extracted_text)
-            # Save the extracted data to the database
-            ExtractedReceipt.objects.create(
-                purchased_at=datetime.strptime(parsed_data["purchased_at"], "%Y-%m-%d") if parsed_data["purchased_at"] else None,
-                merchant_name=parsed_data["merchant_name"],
-                total_amount=parsed_data["total_amount"],
-                file_path=file_path,
-            )
+
+            # Validate the extracted data
+            missing_fields = []
+            if not parsed_data["merchant_name"]:
+                missing_fields.append("Merchant Name")
+            if not parsed_data["purchased_at"]:
+                missing_fields.append("Date")
+            if not parsed_data["total_amount"]:
+                missing_fields.append("Total Amount")
+
+            if missing_fields:
+                # Mark the file as invalid and set the invalid_reason
+                uploaded_file.is_valid = False
+                uploaded_file.invalid_reason = f"Missing fields: {', '.join(missing_fields)}"
+                uploaded_file.save()
+            else:
+                # Save the extracted data to the database
+                ExtractedReceipt.objects.create(
+                    purchased_at=datetime.strptime(parsed_data["purchased_at"], "%Y-%m-%d") if parsed_data["purchased_at"] else None,
+                    merchant_name=parsed_data["merchant_name"],
+                    total_amount=parsed_data["total_amount"],
+                    file_path=file_path,
+                )
+                # Mark the file as valid
+                uploaded_file.is_valid = True
+                uploaded_file.save()
+
             return redirect('success')  # Redirect to a success page
     else:
         form = UploadFileForm()
@@ -28,3 +48,4 @@ def upload_file(request):
 
 def success(request):
     return render(request, 'success.html')
+
