@@ -32,6 +32,7 @@ def upload_file(request):
             else:
                 # Save the extracted data to the database
                 ExtractedReceipt.objects.create(
+                    uploaded_file=uploaded_file,
                     purchased_at=datetime.strptime(parsed_data["purchased_at"], "%Y-%m-%d") if parsed_data["purchased_at"] else None,
                     merchant_name=parsed_data["merchant_name"],
                     total_amount=parsed_data["total_amount"],
@@ -39,6 +40,7 @@ def upload_file(request):
                 )
                 # Mark the file as valid
                 uploaded_file.is_valid = True
+                uploaded_file.invalid_reason = None
                 uploaded_file.save()
 
             return redirect('success')  # Redirect to a success page
@@ -50,7 +52,16 @@ def success(request):
     return render(request, 'success.html')
 
 def receipt_list(request):
-    # Fetch all receipts from the database
-    receipts = ExtractedReceipt.objects.all()
-    return render(request, 'receipt_list.html', {'receipts': receipts})
+    # Fetch all valid receipts from the ExtractedReceipt model
+    valid_receipts = ExtractedReceipt.objects.all()
 
+    # Fetch all invalid uploaded files from the UploadedFile model
+    invalid_receipts = UploadedFile.objects.filter(is_valid=False)
+
+    context = {
+        'valid_receipts': valid_receipts,
+        'invalid_receipts': invalid_receipts,
+        'total_valid_receipts': valid_receipts.count(),
+        'total_invalid_receipts': invalid_receipts.count(),
+    }
+    return render(request, 'receipt_list.html', context)

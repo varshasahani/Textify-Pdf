@@ -1,12 +1,13 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container">
     <h2>Upload Receipt</h2>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Upload</button>
+        <button type="submit">Upload</button>
     </form>
+    <p class="note">Accepted formats: PDF</p>
 </div>
 {% endblock %}

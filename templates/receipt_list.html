@@ -2,7 +2,13 @@
 
 {% block content %}
 <div class="container mt-5">
+    <a href="{% url 'upload_file' %}" class="btn btn-primary mt-2 mb-2">Upload File</a>
     <h2>All Receipts</h2>
+    <p>Total Valid Receipts: {{ total_valid_receipts }}</p>
+    <p>Total Invalid Receipts: {{ total_invalid_receipts }}</p>
+
+    <h3>Valid Receipts</h3>
+    {% if valid_receipts %}
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -10,26 +16,48 @@
                 <th>Merchant Name</th>
                 <th>Date</th>
                 <th>Total Amount</th>
-                <th>File Path</th>
-                <th>Created At</th>
             </tr>
         </thead>
         <tbody>
-            {% for receipt in receipts %}
+            {% for receipt in valid_receipts %}
             <tr>
                 <td>{{ receipt.id }}</td>
                 <td>{{ receipt.merchant_name }}</td>
                 <td>{{ receipt.purchased_at|date:"Y-m-d H:i" }}</td>
                 <td>${{ receipt.total_amount }}</td>
-                <td>{{ receipt.file_path }}</td>
-                <td>{{ receipt.created_at|date:"Y-m-d H:i" }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6" class="text-center">No receipts found.</td>
+               
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    {% else %}
+    <p>No valid receipts found.</p>
+    {% endif %}
+
+    <h3>Invalid Receipts</h3>
+    {% if invalid_receipts %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>File Name</th>
+                <th>Invalid Reason</th>
+                <th>Uploaded At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for receipt in invalid_receipts %}
+            <tr>
+                <td>{{ receipt.id }}</td>
+                <td>{{ receipt.file_name }}</td>
+                <td>{{ receipt.invalid_reason }}</td>
+                <td>{{ receipt.created_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No invalid receipts found.</p>
+    {% endif %}
 </div>
 {% endblock %}
